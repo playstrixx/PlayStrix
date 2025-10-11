@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Online Game Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --danger: #e84393;
+            --warning: #fdcb6e;
+            --whatsapp: #25D366;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp);
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-admin {
+            background: var(--dark);
+            margin-left: 10px;
+        }
+
+        .btn-admin:hover {
+            background: #1e2729;
+        }
+
+        header {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav a {
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            color: white;
+            width: 200px;
+        }
+
+        .search-box button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #4a4a4a 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            text-align: center;
+            margin: 50px 0 30px;
+            font-size: 2rem;
+            color: var(--dark);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-image {
+            height: 180px;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .game-info {
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .game-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .game-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .discount {
+            background: var(--danger);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            nav {
+                order: 3;
+                width: 100%;
+                margin-top: 15px;
+                display: none;
+            }
+
+            nav.active {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .search-box input {
+                width: 150px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-actions {
+                gap: 10px;
+            }
+
+            .search-box {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-gamepad"></i>
+                    <span>GameHub</span>
+                </a>
+                
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav>
+                    <ul>
+                        <li><a href="#store">Store</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="admin.html">Admin</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search games..." id="searchInput">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                    <a href="admin.html" class="btn btn-admin">
+                        <i class="fas fa-lock"></i> Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Discover Your Next Favorite Game</h1>
+            <p>Browse our collection and message us on WhatsApp to purchase instantly!</p>
+            <a href="#store" class="btn">Browse Games</a>
+        </div>
+    </section>
+
+    <!-- Game Store -->
+    <section class="container" id="store">
+        <h2 class="section-title">Featured Games</h2>
+        
+        <div class="games-grid" id="gamesGrid">
+            <!-- Games will be loaded here -->
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="container" id="contact">
+        <div class="hero" style="border-radius: 8px; margin: 50px 0;">
+            <h2>Ready to Buy?</h2>
+            <p>Message us directly on WhatsApp for quick purchases!</p>
+            <a href="https://wa.me/1234567890?text=Hi!%20I'm%20interested%20in%20your%20games" class="btn btn-whatsapp" target="_blank">
+                <i class="fab fa-whatsapp"></i> Message on WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // CONFIGURATION
+        const WHATSAPP_NUMBER = "1234567890"; // ← REPLACE WITH YOUR NUMBER
+
+        class GameStore {
+            constructor() {
+                this.storageKey = 'gamehub-games';
+                this.init();
+            }
+
+            init() {
+                if (!this.getGames().length) {
+                    this.setGames(this.getDefaultGames());
+                }
+                this.setupEventListeners();
+                this.renderStore();
+            }
+
+            getDefaultGames() {
+                return [
+                    {
+                        id: 1,
+                        title: "Cyber Realm",
+                        description: "Immerse yourself in a futuristic open world with stunning graphics and endless possibilities.",
+                        category: "Action",
+                        price: 49.99,
+                        discount: 0,
+                        image: "https://via.placeholder.com/300x180/6c5ce7/ffffff?text=Cyber+Realm"
+                    },
+                    {
+                        id: 2,
+                        title: "Shadow Legends",
+                        description: "A dark fantasy RPG with deep character customization and epic boss battles.",
+                        category: "RPG",
+                        price: 39.99,
+                        discount: 20,
+                        image: "https://via.placeholder.com/300x180/e84393/ffffff?text=Shadow+Legends"
+                    }
+                ];
+            }
+
+            getGames() {
+                return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+            }
+
+            setGames(games) {
+                localStorage.setItem(this.storageKey, JSON.stringify(games));
+            }
+
+            getWhatsAppLink(game = null) {
+                let message = "Hi! I'm interested in buying a game from your store.";
+                if (game) {
+                    message = `Hi! I want to buy "${game.title}" for $${game.price}.`;
+                }
+                return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            }
+
+            renderStore() {
+                const games = this.getGames();
+                const container = document.getElementById('gamesGrid');
+                
+                container.innerHTML = games.map(game => `
+                    <div class="game-card">
+                        <div class="game-image" style="background-image: url('${game.image || `https://via.placeholder.com/300x180/6c5ce7/ffffff?text=${encodeURIComponent(game.title)}`}')"></div>
+                        <div class="game-info">
+                            <h3 class="game-title">${game.title}</h3>
+                            <p class="game-description">${game.description}</p>
+                            <div class="game-price">
+                                <span class="price">$${this.calculateDiscountedPrice(game.price, game.discount).toFixed(2)}</span>
+                                ${game.discount > 0 ? `<span class="discount">-${game.discount}%</span>` : ''}
+                            </div>
+                            <a href="${this.getWhatsAppLink(game)}" class="btn btn-whatsapp" target="_blank">
+                                <i class="fab fa-whatsapp"></i> Buy on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            calculateDiscountedPrice(price, discount) {
+                return price * (1 - discount / 100);
+            }
+
+            setupEventListeners() {
+                document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+                    document.querySelector('nav').classList.toggle('active');
+                });
+
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+            }
+
+            handleSearch(query) {
+                const games = this.getGames();
+                const filteredGames = games.filter(game => 
+                    game.title.toLowerCase().includes(query.toLowerCase()) ||
+                    game.description.toLowerCase().includes(query.toLowerCase()) ||
+                    game.category.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                this.renderFilteredGames(filteredGames);
+            }
+
+            renderFilteredGames(games) {
+                const container = document.getElementById('gamesGrid');
+                
+                container.innerHTML = games.map(game => `
+                    <div class="game-card">
+                        <div class="game-image" style="background-image: url('${game.image || `https://via.placeholder.com/300x180/6c5ce7/ffffff?text=${encodeURIComponent(game.title)}`}')"></div>
+                        <div class="game-info">
+                            <h3 class="game-title">${game.title}</h3>
+                            <p class="game-description">${game.description}</p>
+                            <div class="game-price">
+                                <span class="price">$${this.calculateDiscountedPrice(game.price, game.discount).toFixed(2)}</span>
+                                ${game.discount > 0 ? `<span class="discount">-${game.discount}%</span>` : ''}
+                            </div>
+                            <a href="${this.getWhatsAppLink(game)}" class="btn btn-whatsapp" target="_blank">
+                                <i class="fab fa-whatsapp"></i> Buy on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.gameStore = new GameStore();
+        });
+    </script>
+</body>
+</html>
