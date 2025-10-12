@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayStrix - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #8B5FBF;
+            --secondary: #6D28D9;
+            --accent: #C084FC;
+            --dark: #1E1B2E;
+            --light: #F8FAFC;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, #2D2640 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        h1 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 70, 193, 0.4);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-top: 15px;
+        }
+
+        .btn-back:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .error-message {
+            color: var(--danger);
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .admin-panel {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 20px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .admin-tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .games-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .games-table th, .games-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .games-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .games-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .edit-btn:hover {
+            background: #e69c0b;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .game-thumb {
+            width: 60px;
+            height: 40px;
+            background: #f8f9fa;
+            background-size: cover;
+            background-position: center;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .firebase-error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ffcdd2;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-connected {
+            color: var(--success);
+        }
+
+        .status-disconnected {
+            color: var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .games-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div class="login-container" id="loginSection">
+        <div class="logo">
+            <i class="fas fa-gamepad"></i>
+            <span class="logo-text">PlayStrix</span>
+        </div>
+        
+        <h1>Admin Access</h1>
+        <p class="subtitle">Enter password to continue</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" class="form-control" placeholder="Enter admin password" required>
+                <div class="error-message" id="errorMessage">Incorrect password. Please try again.</div>
+            </div>
+            
+            <button type="submit" class="btn">
+                <i class="fas fa-lock"></i> Access Admin Panel
+            </button>
+        </form>
+        
+        <a href="./index.html" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Store
+        </a>
+    </div>
+
+    <!-- Admin Panel (Hidden until login) -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h1 class="admin-title">
+                <i class="fas fa-cogs"></i>
+                Game Management
+            </h1>
+            <div>
+                <button class="btn" id="addGameBtn">Add New Game</button>
+                <button class="btn btn-back" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <div class="connection-status" id="connectionStatus">
+            <i class="fas fa-circle" id="statusIcon"></i>
+            <span id="statusText">Connecting to Firebase...</span>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> 
+            <span>Game saved successfully! Changes will appear on the live site immediately.</span>
+        </div>
+
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-tab="games-list">Games List</div>
+            <div class="admin-tab" data-tab="add-game">Add/Edit Game</div>
+        </div>
+
+        <!-- Games List Tab -->
+        <div class="admin-content active" id="games-list">
+            <h2>Your Games</h2>
+            <p style="color: #666; margin-bottom: 20px;">Changes made here will automatically update on the live website.</p>
+            <table class="games-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="gamesTableBody">
+                    <!-- Games will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add/Edit Game Tab -->
+        <div class="admin-content" id="add-game">
+            <h2 id="form-title">Add New Game</h2>
+            <form id="gameForm">
+                <input type="hidden" id="gameId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameTitle">Game Title *</label>
+                        <input type="text" id="gameTitle" class="form-control" placeholder="Enter game title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gameCategory">Category *</label>
+                        <select id="gameCategory" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="Action">Action</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="RPG">RPG</option>
+                            <option value="Strategy">Strategy</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Simulation">Simulation</option>
+                            <option value="Indie">Indie</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameDescription">Short Description *</label>
+                    <textarea id="gameDescription" class="form-control" rows="3" placeholder="Brief description shown in game cards" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameFullDescription">Full Description *</label>
+                    <textarea id="gameFullDescription" class="form-control" rows="5" placeholder="Detailed description shown in game detail page" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gamePrice">Price (₹) *</label>
+                        <input type="number" id="gamePrice" class="form-control" min="0" step="1" placeholder="2999" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gameDiscount">Discount (%)</label>
+                        <input type="number" id="gameDiscount" class="form-control" min="0" max="100" value="0" placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameImage">Image Path</label>
+                    <input type="text" id="gameImage" class="form-control" placeholder="./images/gimages/game-name.jpg">
+                    <small style="color: #666;">Use path like: ./images/gimages/your-game.jpg or direct image URL</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameFeatures">Features (comma separated)</label>
+                    <input type="text" id="gameFeatures" class="form-control" placeholder="Open World, Multiplayer, Great Graphics">
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn" id="saveGameBtn">
+                        <i class="fas fa-save"></i> Save Game
+                    </button>
+                    <button type="button" class="btn btn-back" id="cancelEditBtn" style="display: none;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIG
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBt5cpRvPefpaoawHPx3CLKu5AtT6ByD0E",
+            authDomain: "plastrix-1d02a.firebaseapp.com",
+            projectId: "plastrix-1d02a",
+            storageBucket: "plastrix-1d02a.firebasestorage.app",
+            messagingSenderId: "93817630445",
+            appId: "1:93817630445:web:946c2ab7e0cc0434c4a6e4",
+            measurementId: "G-4SZ8L00YS6"
+        };
+
+        const ADMIN_PASSWORD = "shubham2007";
+        const ADMIN_API_KEY = "playstrix_admin_2024";
+
+        class AdminPanel {
+            constructor() {
+                this.storageKey = 'playstrix-games';
+                this.db = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('🔄 Initializing Firebase...');
+                    this.updateConnectionStatus('Connecting to Firebase...', 'disconnected');
+                    
+                    // Check if Firebase is already initialized
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(FIREBASE_CONFIG);
+                    }
+                    
+                    this.db = firebase.firestore();
+                    
+                    // Test the connection
+                    await this.testFirestoreConnection();
+                    this.updateConnectionStatus('Connected to Firebase', 'connected');
+                    
+                    console.log('✅ Firebase initialized successfully');
+                    
+                    this.setupEventListeners();
+                    
+                    // Check if already logged in
+                    if (localStorage.getItem('adminLoggedIn') === 'true') {
+                        this.showAdminPanel();
+                    }
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
+                    this.updateConnectionStatus('Connection failed', 'disconnected');
+                    this.showFirebaseError(error);
+                }
+            }
+
+            updateConnectionStatus(message, status) {
+                const statusElement = document.getElementById('statusText');
+                const statusIcon = document.getElementById('statusIcon');
+                
+                statusElement.textContent = message;
+                
+                if (status === 'connected') {
+                    statusIcon.className = 'fas fa-circle status-connected';
+                    statusElement.className = 'status-connected';
+                } else {
+                    statusIcon.className = 'fas fa-circle status-disconnected';
+                    statusElement.className = 'status-disconnected';
+                }
+            }
+
+            async testFirestoreConnection() {
+                try {
+                    console.log('🔄 Testing Firestore connection...');
+                    // Try a simple read operation to test connection
+                    const snapshot = await this.db.collection('games').limit(1).get();
+                    console.log('✅ Firestore connection successful');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Firestore connection failed:', error);
+                    throw new Error(`Firestore error: ${error.message}`);
+                }
+            }
+
+            showFirebaseError(error) {
+                const loginContainer = document.getElementById('loginSection');
+                const errorHtml = `
+                    <div class="firebase-error">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Firebase Connection Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check:</p>
+                        <ol style="text-align: left; margin: 10px 0;">
+                            <li>Firestore security rules (should allow read/write)</li>
+                            <li>Firestore database is created</li>
+                            <li>Correct Firebase project ID</li>
+                        </ol>
+                        <p><small><a href="https://console.firebase.google.com/project/plastrix-1d02a/firestore" target="_blank">Open Firebase Console</a></small></p>
+                    </div>
+                `;
+                
+                // Remove existing error if any
+                const existingError = loginContainer.querySelector('.firebase-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                loginContainer.insertAdjacentHTML('afterbegin', errorHtml);
+            }
+
+            setupEventListeners() {
+                // Login form
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                // Logout button
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                // Game form submission
+                document.getElementById('gameForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSaveGame();
+                });
+
+                // Add game button
+                document.getElementById('addGameBtn').addEventListener('click', () => {
+                    this.showAddGameForm();
+                });
+
+                // Cancel edit
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    this.resetForm();
+                });
+
+                // Tab switching
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.switchTab(tab.dataset.tab);
+                    });
+                });
+
+                // Delegate events for dynamic content
+                document.getElementById('gamesTableBody').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('edit-btn')) {
+                        this.handleEditGame(e.target.dataset.id);
+                    }
+                    if (e.target.classList.contains('delete-btn')) {
+                        this.handleDeleteGame(e.target.dataset.id);
+                    }
+                });
+            }
+
+            handleLogin() {
+                const password = document.getElementById('adminPassword').value;
+                const errorMessage = document.getElementById('errorMessage');
+
+                if (password === ADMIN_PASSWORD) {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    this.showAdminPanel();
+                } else {
+                    errorMessage.style.display = 'block';
+                    document.getElementById('adminPassword').value = '';
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            handleLogout() {
+                localStorage.removeItem('adminLoggedIn');
+                this.showLoginForm();
+            }
+
+            showAdminPanel() {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                this.loadAndRenderGames();
+            }
+
+            showLoginForm() {
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+            }
+
+            async loadAndRenderGames() {
+                try {
+                    const games = await this.loadGamesFromFirebase();
+                    this.renderGamesTable(games);
+                } catch (error) {
+                    console.error('Error loading games:', error);
+                    this.renderGamesTable([]);
+                }
+            }
+
+            async loadGamesFromFirebase() {
+                try {
+                    console.log('🔄 Loading games from Firebase...');
+                    const snapshot = await this.db.collection('games').orderBy('id').get();
+                    const games = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            ...data,
+                            id: parseInt(data.id) || data.id
+                        };
+                    });
+                    
+                    console.log(`✅ Loaded ${games.length} games from Firebase`);
+                    return games;
+                } catch (error) {
+                    console.error('❌ Error loading from Firebase:', error);
+                    throw error;
+                }
+            }
+
+            async addGame(gameData) {
+                const games = await this.loadGamesFromFirebase();
+                const newId = games.length > 0 ? Math.max(...games.map(g => g.id)) + 1 : 1;
+                
+                const game = { 
+                    id: newId, 
+                    ...gameData,
+                    features: gameData.features ? gameData.features.split(',').map(f => f.trim()).filter(f => f) : ["Amazing Gameplay", "Great Graphics"],
+                    createdAt: new Date().toISOString(),
+                    adminKey: ADMIN_API_KEY
+                };
+                
+                console.log('➕ Adding game to Firebase:', game);
+                
+                // Save to Firebase
+                await this.db.collection('games').doc(newId.toString()).set(game);
+                
+                console.log('✅ Game added successfully');
+                return game;
+            }
+
+            async updateGame(id, gameData) {
+                const updatedGame = { 
+                    ...gameData,
+                    features: gameData.features ? gameData.features.split(',').map(f => f.trim()).filter(f => f) : [],
+                    updatedAt: new Date().toISOString(),
+                    adminKey: ADMIN_API_KEY
+                };
+                
+                console.log('✏️ Updating game in Firebase:', id, updatedGame);
+                
+                // Update in Firebase
+                await this.db.collection('games').doc(id.toString()).set(updatedGame);
+                
+                console.log('✅ Game updated successfully');
+                return updatedGame;
+            }
+
+            async deleteGame(id) {
+                console.log('🗑️ Deleting game from Firebase:', id);
+                await this.db.collection('games').doc(id.toString()).delete();
+                console.log('✅ Game deleted successfully');
+            }
+
+            getImagePath(game) {
+                if (!game || !game.image) {
+                    return `https://via.placeholder.com/60x40/8B5FBF/ffffff?text=No+Img`;
+                }
+                if (game.image.startsWith('http')) {
+                    return game.image;
+                }
+                return game.image;
+            }
+
+            renderGamesTable(games) {
+                const tbody = document.getElementById('gamesTableBody');
+                
+                if (!games || games.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                                <i class="fas fa-gamepad fa-2x" style="margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                                <h3>No Games Yet</h3>
+                                <p>Add your first game using the "Add New Game" button!</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = games.map(game => `
+                    <tr>
+                        <td>
+                            <div class="game-thumb" style="background-image: url('${this.getImagePath(game)}')"></div>
+                        </td>
+                        <td><strong>${game.title}</strong></td>
+                        <td>${game.category}</td>
+                        <td>₹${game.price.toLocaleString('en-IN')}</td>
+                        <td>${game.discount > 0 ? `${game.discount}%` : 'No discount'}</td>
+                        <td class="action-buttons">
+                            <button class="action-btn edit-btn" data-id="${game.id}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" data-id="${game.id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async handleSaveGame() {
+                const gameData = {
+                    title: document.getElementById('gameTitle').value,
+                    description: document.getElementById('gameDescription').value,
+                    fullDescription: document.getElementById('gameFullDescription').value,
+                    category: document.getElementById('gameCategory').value,
+                    price: parseInt(document.getElementById('gamePrice').value),
+                    discount: parseInt(document.getElementById('gameDiscount').value) || 0,
+                    image: document.getElementById('gameImage').value || './images/gimages/game.jpg',
+                    features: document.getElementById('gameFeatures').value
+                };
+
+                // Validate required fields
+                if (!gameData.title || !gameData.description || !gameData.fullDescription || !gameData.category || !gameData.price) {
+                    alert('Please fill all required fields (Title, Description, Full Description, Category, Price)');
+                    return;
+                }
+
+                const editingId = document.getElementById('gameId').value;
+                
+                try {
+                    if (editingId) {
+                        await this.updateGame(parseInt(editingId), gameData);
+                    } else {
+                        await this.addGame(gameData);
+                    }
+
+                    this.showSuccessMessage();
+                    await this.loadAndRenderGames();
+                    this.resetForm();
+                    this.switchTab('games-list');
+                    
+                } catch (error) {
+                    console.error('Error saving game:', error);
+                    alert('Error saving game: ' + error.message);
+                }
+            }
+
+            showSuccessMessage() {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'flex';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 5000);
+            }
+
+            async handleEditGame(id) {
+                try {
+                    const games = await this.loadGamesFromFirebase();
+                    const game = games.find(g => g.id === parseInt(id));
+                    
+                    if (game) {
+                        document.getElementById('gameId').value = game.id;
+                        document.getElementById('gameTitle').value = game.title;
+                        document.getElementById('gameDescription').value = game.description;
+                        document.getElementById('gameFullDescription').value = game.fullDescription;
+                        document.getElementById('gameCategory').value = game.category;
+                        document.getElementById('gamePrice').value = game.price;
+                        document.getElementById('gameDiscount').value = game.discount;
+                        document.getElementById('gameImage').value = game.image || '';
+                        document.getElementById('gameFeatures').value = game.features ? game.features.join(', ') : '';
+
+                        document.getElementById('form-title').textContent = 'Edit Game';
+                        document.getElementById('saveGameBtn').innerHTML = '<i class="fas fa-save"></i> Update Game';
+                        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+                        this.switchTab('add-game');
+                    } else {
+                        alert('Game not found!');
+                    }
+                } catch (error) {
+                    alert('Error loading game: ' + error.message);
+                }
+            }
+
+            async handleDeleteGame(id) {
+                if (confirm('Are you sure you want to delete this game? This will remove it from the live website immediately.')) {
+                    try {
+                        await this.deleteGame(parseInt(id));
+                        this.showSuccessMessage();
+                        await this.loadAndRenderGames();
+                    } catch (error) {
+                        alert('Error deleting game: ' + error.message);
+                    }
+                }
+            }
+
+            switchTab(tabName) {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+                
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+            }
+
+            showAddGameForm() {
+                this.resetForm();
+                this.switchTab('add-game');
+            }
+
+            resetForm() {
+                document.getElementById('gameForm').reset();
+                document.getElementById('gameId').value = '';
+                document.getElementById('form-title').textContent = 'Add New Game';
+                document.getElementById('saveGameBtn').innerHTML = '<i class="fas fa-save"></i> Save Game';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+                document.getElementById('gameFeatures').value = '';
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.adminPanel = new AdminPanel();
+        });
+    </script>
+</body>
+</html>
