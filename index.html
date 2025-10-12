@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayStrix - Where Games Take Flight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --danger: #e84393;
+            --warning: #fdcb6e;
+            --whatsapp: #25D366;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp);
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-admin {
+            background: var(--dark);
+            margin-left: 10px;
+        }
+
+        .btn-admin:hover {
+            background: #1e2729;
+        }
+
+        .btn-back {
+            background: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background: #1e2729;
+        }
+
+        header {
+            background-color: white;
+            color: var(--dark);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav a {
+            font-weight: 500;
+            transition: color 0.3s;
+            color: var(--dark);
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            color: var(--dark);
+            width: 200px;
+        }
+
+        .search-box button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: var(--secondary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(108, 92, 231, 0.8), rgba(138, 124, 237, 0.8)), url('./images/hero/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .section-title {
+            text-align: center;
+            margin: 60px 0 40px;
+            font-size: 2.5rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-image {
+            height: 200px;
+            background-color: #f8f9fa;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .game-info {
+            padding: 25px;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .game-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            height: 70px;
+            overflow: hidden;
+        }
+
+        .game-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .discount {
+            background: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Game Detail View Styles */
+        .game-detail-view {
+            display: none;
+            padding: 40px 0;
+        }
+
+        .game-detail-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .game-detail-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .game-detail-image {
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+        }
+
+        .game-detail-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-detail-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .game-detail-category {
+            background: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .game-detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .game-detail-price-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .game-detail-price {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .original-price {
+            font-size: 1.3rem;
+            color: #999;
+            text-decoration: line-through;
+            margin-right: 15px;
+        }
+
+        .game-detail-discount {
+            background: var(--danger);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .game-detail-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 1.1rem;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            border-radius: 12px;
+            margin: 60px 0;
+        }
+
+        .contact-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .contact-section p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .flight-icon {
+            display: inline-block;
+            margin-left: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            nav {
+                order: 3;
+                width: 100%;
+                margin-top: 15px;
+                display: none;
+            }
+
+            nav.active {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .search-box input {
+                width: 150px;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero .tagline {
+                font-size: 1.2rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .logo-text {
+                font-size: 1.6rem;
+            }
+
+            .game-detail-hero {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 25px;
+            }
+
+            .game-detail-image {
+                height: 300px;
+            }
+
+            .game-detail-title {
+                font-size: 2rem;
+            }
+
+            .game-detail-actions {
+                flex-direction: column;
+            }
+
+            .btn-large {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-actions {
+                gap: 10px;
+            }
+
+            .search-box {
+                display: none;
+            }
+
+            .hero {
+                padding: 60px 0;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero .tagline {
+                font-size: 1rem;
+                letter-spacing: 1px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .logo-text {
+                font-size: 1.4rem;
+            }
+
+            .game-detail-hero {
+                padding: 20px;
+            }
+
+            .game-detail-title {
+                font-size: 1.8rem;
+            }
+
+            .game-detail-price {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <img src="./images/logo/playstrix-logo.png" alt="PlayStrix" class="logo-img" onerror="this.style.display='none'">
+                    <span class="logo-text">PlayStrix</span>
+                </a>
+                
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav>
+                    <ul>
+                        <li><a href="#store">Store</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="./admin.html">Admin</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search games..." id="searchInput">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                    <a href="./admin.html" class="btn btn-admin">
+                        <i class="fas fa-lock"></i> Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>PlayStrix</h1>
+                <div class="tagline">WHERE GAMES TAKE FLIGHT <span class="flight-icon">🚀</span></div>
+                <p>Browse our collection and message us on WhatsApp to purchase instantly!</p>
+                <a href="#store" class="btn btn-outline">
+                    Browse Games <i class="fas fa-arrow-down"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Store -->
+    <section class="container" id="store">
+        <h2 class="section-title">Featured Games</h2>
+        
+        <div class="games-grid" id="gamesGrid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Loading games...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Detail View -->
+    <section class="container game-detail-view" id="gameDetailView">
+        <button class="btn btn-back" onclick="window.gameStore.showStore()">
+            <i class="fas fa-arrow-left"></i> Back to Store
+        </button>
+        
+        <div class="game-detail-container" id="gameDetailContainer">
+            <!-- Game detail content will be loaded here -->
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="container" id="contact">
+        <div class="contact-section">
+            <h2>Ready to Buy?</h2>
+            <p>Message us directly on WhatsApp for quick purchases and instant support!</p>
+            <a href="https://wa.me/8382830357?text=Hi!%20I'm%20interested%20in%20your%20games" class="btn btn-whatsapp" target="_blank">
+                <i class="fab fa-whatsapp"></i> Message on WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // FIREBASE CONFIG
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBt5cpRvPefpaoawHPx3CLKu5AtT6ByD0E",
+            authDomain: "plastrix-1d02a.firebaseapp.com",
+            projectId: "plastrix-1d02a",
+            storageBucket: "plastrix-1d02a.firebasestorage.app",
+            messagingSenderId: "93817630445",
+            appId: "1:93817630445:web:946c2ab7e0cc0434c4a6e4",
+            measurementId: "G-4SZ8L00YS6"
+        };
+
+        const WHATSAPP_NUMBER = "8382830357";
+
+        class GameStore {
+            constructor() {
+                this.storageKey = 'playstrix-games';
+                this.imagesBasePath = './images/gimages/';
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Initialize Firebase
+                    firebase.initializeApp(FIREBASE_CONFIG);
+                    this.db = firebase.firestore();
+                    console.log('🔥 Firebase Connected!');
+                    
+                    // Set up real-time listener
+                    this.setupRealtimeListener();
+                    this.setupEventListeners();
+                    
+                } catch (error) {
+                    console.error('Firebase failed, using localStorage:', error);
+                    this.fallbackToLocalStorage();
+                }
+            }
+
+            setupRealtimeListener() {
+                // REAL-TIME LISTENER: Updates automatically when admin makes changes
+                this.db.collection('games').orderBy('id').onSnapshot((snapshot) => {
+                    console.log('🔄 Firestore update received!');
+                    const games = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            ...data,
+                            id: parseInt(data.id) || data.id
+                        };
+                    });
+                    
+                    this.setGames(games);
+                    this.renderStore();
+                    console.log('✅ Games updated in real-time!', games.length, 'games loaded');
+                    
+                }, (error) => {
+                    console.error('❌ Realtime listener error:', error);
+                    this.fallbackToLocalStorage();
+                });
+            }
+
+            getDefaultGames() {
+                return [
+                    {
+                        id: 1,
+                        title: "Cyber Realm",
+                        description: "Immerse yourself in a futuristic open world with stunning graphics and endless possibilities. Explore vast cities and uncover hidden secrets.",
+                        fullDescription: "Cyber Realm is an epic open-world adventure set in a breathtaking cyberpunk future. Explore neon-lit cities, engage in high-stakes combat, and uncover the mysteries of a world torn between technology and humanity. With cutting-edge graphics, deep character customization, and a story that reacts to your choices, every playthrough offers a unique experience.",
+                        category: "Action",
+                        price: 3499,
+                        discount: 0,
+                        image: "./images/gimages/cyber-realm.jpg",
+                        features: ["Open World", "Character Customization", "Multiple Endings", "Online Co-op"]
+                    },
+                    {
+                        id: 2,
+                        title: "Shadow Legends",
+                        description: "A dark fantasy RPG with deep character customization and epic boss battles. Build your legend in a world of magic and mystery.",
+                        fullDescription: "Enter the dark and mystical world of Shadow Legends, where ancient magic and terrifying creatures await. Create your unique hero from multiple classes and races, each with their own abilities and storylines. Battle colossal bosses, master powerful spells, and shape the fate of the realm through your actions in this epic RPG adventure.",
+                        category: "RPG",
+                        price: 2799,
+                        discount: 20,
+                        image: "./images/gimages/shadow-legends.jpg",
+                        features: ["Class System", "Epic Boss Battles", "Magic System", "Branching Storyline"]
+                    }
+                ];
+            }
+
+            getGames() {
+                const games = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+                return games.length ? games : this.getDefaultGames();
+            }
+
+            setGames(games) {
+                localStorage.setItem(this.storageKey, JSON.stringify(games));
+            }
+
+            getImagePath(game) {
+                // Use the image path from Firebase, fallback to placeholder
+                if (game.image && game.image.startsWith('http')) {
+                    return game.image;
+                } else if (game.image) {
+                    return game.image;
+                } else {
+                    return `https://via.placeholder.com/400x250/6c5ce7/ffffff?text=${encodeURIComponent(game.title)}`;
+                }
+            }
+
+            getWhatsAppLink(game = null) {
+                let message = "Hi! I'm interested in buying a game from PlayStrix.";
+                if (game) {
+                    const price = this.calculateDiscountedPrice(game.price, game.discount);
+                    message = `Hi! I want to buy "${game.title}" for ₹${price.toLocaleString('en-IN')} from PlayStrix.`;
+                }
+                return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            }
+
+            renderStore() {
+                const games = this.getGames();
+                const container = document.getElementById('gamesGrid');
+                
+                if (games.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                            <i class="fas fa-gamepad fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+                            <h3>No games available</h3>
+                            <p>Check back later for new games!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = games.map(game => `
+                    <div class="game-card" onclick="window.gameStore.showGameDetail(${game.id})">
+                        <div class="game-image" style="background-image: url('${this.getImagePath(game)}')"></div>
+                        <div class="game-info">
+                            <h3 class="game-title">${game.title}</h3>
+                            <p class="game-description">${game.description}</p>
+                            <div class="game-price">
+                                <span class="price">₹${this.calculateDiscountedPrice(game.price, game.discount).toLocaleString('en-IN')}</span>
+                                ${game.discount > 0 ? `<span class="discount">-${game.discount}%</span>` : ''}
+                            </div>
+                            <button class="btn btn-whatsapp" onclick="event.stopPropagation(); window.open('${this.getWhatsAppLink(game)}', '_blank');">
+                                <i class="fab fa-whatsapp"></i> Buy Now
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            showGameDetail(gameId) {
+                const game = this.getGames().find(g => g.id === gameId);
+                if (!game) return;
+
+                // Hide store, show detail view
+                document.getElementById('store').style.display = 'none';
+                document.getElementById('gameDetailView').style.display = 'block';
+                document.getElementById('contact').style.display = 'none';
+
+                const container = document.getElementById('gameDetailContainer');
+                const discountedPrice = this.calculateDiscountedPrice(game.price, game.discount);
+                
+                container.innerHTML = `
+                    <div class="game-detail-hero">
+                        <div class="game-detail-image" style="background-image: url('${this.getImagePath(game)}')"></div>
+                        <div class="game-detail-info">
+                            <div>
+                                <h1 class="game-detail-title">${game.title}</h1>
+                                <span class="game-detail-category">${game.category}</span>
+                                <p class="game-detail-description">${game.fullDescription || game.description}</p>
+                                
+                                <div class="game-features">
+                                    <h3 style="margin-bottom: 15px; color: var(--dark);">Key Features:</h3>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 30px;">
+                                        ${(game.features || []).map(feature => `
+                                            <div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                                                <i class="fas fa-check" style="color: var(--success); margin-right: 8px;"></i>
+                                                ${feature}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="game-detail-price-section">
+                                    ${game.discount > 0 ? `
+                                        <div style="margin-bottom: 10px;">
+                                            <span class="original-price">₹${game.price.toLocaleString('en-IN')}</span>
+                                            <span class="game-detail-discount">-${game.discount}% OFF</span>
+                                        </div>
+                                    ` : ''}
+                                    <div class="game-detail-price">₹${discountedPrice.toLocaleString('en-IN')}</div>
+                                    <div style="color: #666; font-size: 0.9rem;">One-time purchase • Lifetime access</div>
+                                </div>
+                                
+                                <div class="game-detail-actions">
+                                    <a href="${this.getWhatsAppLink(game)}" class="btn btn-whatsapp btn-large" target="_blank">
+                                        <i class="fab fa-whatsapp"></i> Buy Now on WhatsApp
+                                    </a>
+                                    <button class="btn btn-outline" onclick="window.gameStore.showStore()" style="border-color: var(--primary); color: var(--primary);">
+                                        <i class="fas fa-arrow-left"></i> Back to Store
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Scroll to top of detail view
+                document.getElementById('gameDetailView').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showStore() {
+                // Show store, hide detail view
+                document.getElementById('store').style.display = 'block';
+                document.getElementById('gameDetailView').style.display = 'none';
+                document.getElementById('contact').style.display = 'block';
+                
+                // Scroll to store
+                document.getElementById('store').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            calculateDiscountedPrice(price, discount) {
+                return Math.round(price * (1 - discount / 100));
+            }
+
+            setupEventListeners() {
+                document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+                    document.querySelector('nav').classList.toggle('active');
+                });
+
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+
+                // Smooth scrolling for anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            }
+
+            handleSearch(query) {
+                const games = this.getGames();
+                const filteredGames = games.filter(game => 
+                    game.title.toLowerCase().includes(query.toLowerCase()) ||
+                    game.description.toLowerCase().includes(query.toLowerCase()) ||
+                    game.category.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                this.renderFilteredGames(filteredGames);
+            }
+
+            renderFilteredGames(games) {
+                const container = document.getElementById('gamesGrid');
+                
+                container.innerHTML = games.map(game => `
+                    <div class="game-card" onclick="window.gameStore.showGameDetail(${game.id})">
+                        <div class="game-image" style="background-image: url('${this.getImagePath(game)}')"></div>
+                        <div class="game-info">
+                            <h3 class="game-title">${game.title}</h3>
+                            <p class="game-description">${game.description}</p>
+                            <div class="game-price">
+                                <span class="price">₹${this.calculateDiscountedPrice(game.price, game.discount).toLocaleString('en-IN')}</span>
+                                ${game.discount > 0 ? `<span class="discount">-${game.discount}%</span>` : ''}
+                            </div>
+                            <button class="btn btn-whatsapp" onclick="event.stopPropagation(); window.open('${this.getWhatsAppLink(game)}', '_blank');">
+                                <i class="fab fa-whatsapp"></i> Buy Now
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            fallbackToLocalStorage() {
+                if (!this.getGames().length) {
+                    this.setGames(this.getDefaultGames());
+                }
+                this.setupEventListeners();
+                this.renderStore();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.gameStore = new GameStore();
+        });
+    </script>
+</body>
+</html>
