@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -34,7 +35,6 @@
             color: var(--text-dark);
             line-height: 1.6;
             overflow-x: hidden;
-            perspective: 1000px;
         }
 
         a {
@@ -159,15 +159,6 @@
             }
         }
 
-        @keyframes card3dHover {
-            0% {
-                transform: perspective(1000px) rotateX(0) rotateY(0) translateZ(0);
-            }
-            100% {
-                transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(20px);
-            }
-        }
-
         @keyframes hotDealPulse {
             0%, 100% {
                 transform: rotate(45deg) scale(1);
@@ -260,7 +251,6 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            transform-style: preserve-3d;
             text-align: center;
             flex: 1;
         }
@@ -282,7 +272,7 @@
 
         .btn:hover {
             background: var(--secondary);
-            transform: translateY(-2px) translateZ(10px);
+            transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(107, 70, 193, 0.4);
         }
 
@@ -745,6 +735,107 @@
             border-radius: 3px;
         }
 
+        /* Offers Section */
+        .offers-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 80px;
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .offer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .offer-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
+        }
+
+        .offer-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            background-color: #f8f9fa;
+        }
+
+        .offer-content {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .offer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .offer-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .offer-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .offer-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .offer-details {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .offer-detail {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .offer-validity {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Games Grid */
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1100,6 +1191,10 @@
             .cart-panel {
                 width: 320px;
             }
+
+            .offers-container {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 576px) {
@@ -1201,6 +1296,7 @@
                 <nav>
                     <ul>
                         <li><a href="#store">Store</a></li>
+                        <li><a href="#offers-section">Offers</a></li>
                         <li><a href="#contact">Contact</a></li>
                         <li><a href="admin.html">Admin</a></li>
                     </ul>
@@ -1242,6 +1338,18 @@
                         Browse Games <i class="fas fa-arrow-down"></i>
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Special Offers Section -->
+    <section class="container" id="offers-section">
+        <h2 class="section-title">Special Offers 🎁</h2>
+        
+        <div class="offers-container" id="offersContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Loading offers...</p>
             </div>
         </div>
     </section>
@@ -1298,6 +1406,7 @@
                 this.games = [];
                 this.filteredGames = [];
                 this.cart = [];
+                this.offers = [];
                 this.db = null;
                 this.init();
             }
@@ -1310,8 +1419,10 @@
                     this.db = firebase.firestore();
                     
                     await this.loadGamesFromFirebase();
+                    await this.loadOffersFromFirebase();
                     this.loadCartFromStorage();
                     this.renderStore();
+                    this.renderOffers();
                     this.setupEventListeners();
                     this.createParticles();
                     this.updateCartUI();
@@ -1372,10 +1483,36 @@
                 }
             }
 
+            async loadOffersFromFirebase() {
+                try {
+                    const snapshot = await this.db.collection('offers').get();
+                    this.offers = [];
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        this.offers.push({
+                            ...data,
+                            id: doc.id
+                        });
+                    });
+                    
+                    console.log(`✅ Loaded ${this.offers.length} offers from Firebase`);
+                } catch (error) {
+                    console.error('❌ Error loading offers from Firebase:', error);
+                    this.offers = [];
+                }
+            }
+
             setupRealtimeUpdates() {
                 this.db.collection('games').onSnapshot((snapshot) => {
                     this.loadGamesFromFirebase().then(() => {
                         this.renderStore();
+                    });
+                });
+
+                this.db.collection('offers').onSnapshot((snapshot) => {
+                    this.loadOffersFromFirebase().then(() => {
+                        this.renderOffers();
                     });
                 });
             }
@@ -1515,6 +1652,63 @@
                         </button>
                     </div>
                 `;
+            }
+
+            renderOffers() {
+                const container = document.getElementById('offersContainer');
+                
+                if (this.offers.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-tags"></i>
+                            <h3>No Special Offers</h3>
+                            <p>Check back later for amazing deals and discounts!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.offers.map(offer => {
+                    const offerImage = offer.image || './images/logo/offer-default.jpg';
+                    const validUntil = offer.validUntil ? new Date(offer.validUntil).toLocaleDateString() : 'No expiry';
+                    
+                    return `
+                        <div class="offer-card">
+                            <div class="offer-image" style="background-image: url('${offerImage}')"></div>
+                            <div class="offer-content">
+                                <div class="offer-header">
+                                    <h3 class="offer-title">${offer.title}</h3>
+                                    <span class="offer-badge">${this.getOfferTypeLabel(offer.type)}</span>
+                                </div>
+                                <p class="offer-description">${offer.description}</p>
+                                <div class="offer-details">
+                                    ${offer.minQuantity ? `<div class="offer-detail">Min. ${offer.minQuantity} items</div>` : ''}
+                                    ${offer.discountPercent ? `<div class="offer-detail">${offer.discountPercent}% OFF</div>` : ''}
+                                    <div class="offer-detail">${this.getApplicableGamesText(offer)}</div>
+                                </div>
+                                <div class="offer-validity">
+                                    <strong>Valid until:</strong> ${validUntil}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getOfferTypeLabel(type) {
+                const types = {
+                    'buy1get1': 'Buy 1 Get 1 Free',
+                    'bulk_discount': 'Bulk Discount',
+                    'combo': 'Combo Offer'
+                };
+                return types[type] || type;
+            }
+
+            getApplicableGamesText(offer) {
+                if (!offer.applicableGames || offer.applicableGames.length === 0) {
+                    return 'All Games';
+                }
+                return `${offer.applicableGames.length} Game(s)`;
             }
 
             getWhatsAppLink(game = null) {
@@ -1682,7 +1876,7 @@
                     this.showStore();
                 });
 
-                // Cart functionality - FIXED
+                // Cart functionality
                 document.getElementById('cartIcon').addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.openCart();
