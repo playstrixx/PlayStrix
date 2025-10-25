@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayStrix - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #8B5FBF;
+            --secondary: #6D28D9;
+            --accent: #C084FC;
+            --dark: #1E1B2E;
+            --light: #F8FAFC;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, #2D2640 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        h1 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 5px 15px rgba(139, 95, 191, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(107, 70, 193, 0.4);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-top: 15px;
+        }
+
+        .btn-back:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .error-message {
+            color: var(--danger);
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .admin-panel {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .admin-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .admin-tab:hover {
+            background: rgba(139, 95, 191, 0.1);
+            color: var(--primary);
+        }
+
+        .admin-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .games-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .games-table th, .games-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .games-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .games-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .edit-btn:hover {
+            background: #e69c0b;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .game-thumb {
+            width: 60px;
+            height: 40px;
+            background: #f8f9fa;
+            background-size: cover;
+            background-position: center;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .firebase-error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ffcdd2;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .status-connected {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .status-disconnected {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        /* Offers Tab Styles */
+        .offer-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .offer-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .offer-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .offer-image-preview {
+            width: 100px;
+            height: 60px;
+            background: #f8f9fa;
+            background-size: cover;
+            background-position: center;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-top: 8px;
+        }
+
+        /* File Upload Styles */
+        .file-upload-container {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .file-upload-container:hover {
+            border-color: var(--primary);
+            background: #f8f9fa;
+        }
+
+        .file-upload-container.dragover {
+            border-color: var(--primary);
+            background: rgba(139, 95, 191, 0.1);
+        }
+
+        .file-upload-label {
+            display: block;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .file-upload-label i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .upload-preview {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .upload-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .upload-progress {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .image-path-display {
+            background: #e8f4fd;
+            border: 1px solid #b6d7f2;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #1a73e8;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .games-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .admin-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div class="login-container" id="loginSection">
+        <div class="logo">
+            <i class="fas fa-gamepad"></i>
+            <span class="logo-text">PlayStrix</span>
+        </div>
+        
+        <h1>Admin Access</h1>
+        <p class="subtitle">Enter your credentials to continue</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="adminEmail">Email</label>
+                <input type="email" id="adminEmail" class="form-control" placeholder="admin@playstrix.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" class="form-control" placeholder="Enter your password" required>
+                <div class="error-message" id="errorMessage">Invalid email or password. Please try again.</div>
+            </div>
+            
+            <button type="submit" class="btn">
+                <i class="fas fa-lock"></i> Access Admin Panel
+            </button>
+        </form>
+        
+        <a href="./index.html" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Store
+        </a>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h1 class="admin-title">
+                <i class="fas fa-cogs"></i>
+                Game Management
+            </h1>
+            <div>
+                <button class="btn" id="addGameBtn">
+                    <i class="fas fa-plus"></i> Add New Game
+                </button>
+                <button class="btn btn-back" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="connection-status" id="connectionStatus">
+            <i class="fas fa-circle" id="statusIcon"></i>
+            <span id="statusText">Connecting to Firebase...</span>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> 
+            <span id="successText">Operation completed successfully!</span>
+        </div>
+
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-tab="games-list">
+                <i class="fas fa-list"></i> Games List
+            </div>
+            <div class="admin-tab" data-tab="add-game">
+                <i class="fas fa-edit"></i> Add/Edit Game
+            </div>
+            <div class="admin-tab" data-tab="offers">
+                <i class="fas fa-tags"></i> Special Offers
+            </div>
+        </div>
+
+        <!-- Games List Tab -->
+        <div class="admin-content active" id="games-list">
+            <h2>Your Games</h2>
+            <p style="color: #666; margin-bottom: 20px;">Changes made here will automatically update on the live website.</p>
+            <table class="games-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="gamesTableBody">
+                    <!-- Games will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add/Edit Game Tab -->
+        <div class="admin-content" id="add-game">
+            <h2 id="form-title">Add New Game</h2>
+            <form id="gameForm">
+                <input type="hidden" id="gameId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameTitle">Game Title *</label>
+                        <input type="text" id="gameTitle" class="form-control" placeholder="Enter game title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gameCategory">Category *</label>
+                        <select id="gameCategory" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="Action">Action</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="RPG">RPG</option>
+                            <option value="Strategy">Strategy</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Simulation">Simulation</option>
+                            <option value="Indie">Indie</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameDescription">Short Description *</label>
+                    <textarea id="gameDescription" class="form-control" rows="3" placeholder="Brief description shown in game cards" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameFullDescription">Full Description *</label>
+                    <textarea id="gameFullDescription" class="form-control" rows="5" placeholder="Detailed description shown in game detail page" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gamePrice">Price (₹) *</label>
+                        <input type="number" id="gamePrice" class="form-control" min="0" step="1" placeholder="2999" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gameDiscount">Discount (%)</label>
+                        <input type="number" id="gameDiscount" class="form-control" min="0" max="100" value="0" placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameImage">Image URL *</label>
+                    <input type="text" id="gameImage" class="form-control" placeholder="./images/gimages/game-name.jpg" required>
+                    <small style="color: #666;">Use path like: ./images/gimages/your-game.jpg or direct image URL</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameFeatures">Features (comma separated)</label>
+                    <input type="text" id="gameFeatures" class="form-control" placeholder="Open World, Multiplayer, Great Graphics">
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn" id="saveGameBtn">
+                        <i class="fas fa-save"></i> Save Game
+                    </button>
+                    <button type="button" class="btn btn-back" id="cancelEditBtn" style="display: none;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Offers Management Tab -->
+        <div class="admin-content" id="offers">
+            <h2>Special Offers</h2>
+            <p style="color: #666; margin-bottom: 20px;">Create special offers like Buy 1 Get 1 Free or Bulk discounts.</p>
+            
+            <button class="btn" id="addOfferBtn" style="margin-bottom: 20px;">
+                <i class="fas fa-plus"></i> Add New Offer
+            </button>
+            
+            <div class="offers-list" id="offersList">
+                <!-- Offers will be populated here -->
+            </div>
+            
+            <!-- Offer Form -->
+            <div class="offer-form" id="offerForm" style="display: none;">
+                <h3 id="offer-form-title">Add New Offer</h3>
+                <form id="offerFormElement">
+                    <input type="hidden" id="offerId">
+                    <input type="hidden" id="offerImagePath">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="offerTitle">Offer Title *</label>
+                            <input type="text" id="offerTitle" class="form-control" placeholder="e.g., Buy 1 Get 1 Free" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="offerType">Offer Type *</label>
+                            <select id="offerType" class="form-control" required>
+                                <option value="">Select Offer Type</option>
+                                <option value="buy1get1">Buy 1 Get 1 Free</option>
+                                <option value="bulk_discount">Bulk Discount</option>
+                                <option value="combo">Combo Offer</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="bulkDiscountFields" style="display: none;">
+                        <div class="form-group">
+                            <label for="minQuantity">Minimum Quantity *</label>
+                            <input type="number" id="minQuantity" class="form-control" min="2" placeholder="3">
+                        </div>
+                        <div class="form-group">
+                            <label for="discountPercent">Discount Percentage *</label>
+                            <input type="number" id="discountPercent" class="form-control" min="1" max="100" placeholder="45">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="offerDescription">Offer Description *</label>
+                        <textarea id="offerDescription" class="form-control" rows="3" placeholder="Describe the offer details" required></textarea>
+                    </div>
+
+                    <!-- File Upload for Offer Image -->
+                    <div class="form-group">
+                        <label>Offer Image</label>
+                        <div class="file-upload-container" id="fileUploadContainer">
+                            <label class="file-upload-label" for="offerImageUpload">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div>Click to upload or drag and drop</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; color: #999;">
+                                    PNG, JPG, WEBP up to 5MB
+                                </div>
+                            </label>
+                            <input type="file" id="offerImageUpload" class="file-upload-input" accept="image/png, image/jpeg, image/webp">
+                            
+                            <div class="upload-preview" id="uploadPreview">
+                                <img id="previewImage" src="" alt="Preview">
+                                <button type="button" class="btn btn-back" id="removeImageBtn" style="margin-top: 10px; width: auto;">
+                                    <i class="fas fa-times"></i> Remove Image
+                                </button>
+                            </div>
+                            
+                            <div class="upload-progress" id="uploadProgress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <div class="upload-status" id="uploadStatus">Processing...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="image-path-display" id="imagePathDisplay">
+                            <strong>Image Path:</strong> <span id="pathText"></span>
+                        </div>
+                        
+                        <small style="color: #666;">Image will be saved to: ./images/hero/</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="applicableGames">Applicable Games</label>
+                        <select id="applicableGames" class="form-control" multiple style="height: 120px;">
+                            <!-- Games will be populated dynamically -->
+                        </select>
+                        <small style="color: #666;">Hold Ctrl/Cmd to select multiple games. Leave empty for all games.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="offerValidUntil">Valid Until</label>
+                        <input type="date" id="offerValidUntil" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn" id="saveOfferBtn">
+                            <i class="fas fa-save"></i> Save Offer
+                        </button>
+                        <button type="button" class="btn btn-back" id="cancelOfferBtn">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBt5cpRvPefpaoawHPx3CLKu5AtT6ByD0E",
+            authDomain: "plastrix-1d02a.firebaseapp.com",
+            projectId: "plastrix-1d02a",
+            storageBucket: "plastrix-1d02a.firebasestorage.app",
+            messagingSenderId: "93817630445",
+            appId: "1:93817630445:web:946c2ab7e0cc0434c4a6e4",
+            measurementId: "G-4SZ8L00YS6"
+        };
+
+        const ADMIN_API_KEY = "playstrix_admin_2024";
+
+        class AdminPanel {
+            constructor() {
+                this.db = null;
+                this.auth = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('🔄 Initializing Firebase...');
+                    this.updateConnectionStatus('Connecting to Firebase...', 'disconnected');
+                    
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(FIREBASE_CONFIG);
+                    }
+                    
+                    this.db = firebase.firestore();
+                    this.auth = firebase.auth();
+                    await this.testFirestoreConnection();
+                    this.updateConnectionStatus('Connected to Firebase', 'connected');
+                    
+                    console.log('✅ Firebase initialized successfully');
+                    
+                    this.setupEventListeners();
+                    this.setupAuthListener();
+                    
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
+                    this.updateConnectionStatus('Connection failed', 'disconnected');
+                    this.showFirebaseError(error);
+                }
+            }
+
+            setupAuthListener() {
+                this.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        console.log('✅ User authenticated:', user.email);
+                        this.showAdminPanel();
+                    } else {
+                        console.log('🔒 User signed out');
+                        this.showLoginForm();
+                    }
+                });
+            }
+
+            updateConnectionStatus(message, status) {
+                const statusElement = document.getElementById('statusText');
+                const statusIcon = document.getElementById('statusIcon');
+                const statusContainer = document.getElementById('connectionStatus');
+                
+                statusElement.textContent = message;
+                
+                if (status === 'connected') {
+                    statusIcon.className = 'fas fa-circle status-connected';
+                    statusContainer.className = 'connection-status status-connected';
+                } else {
+                    statusIcon.className = 'fas fa-circle status-disconnected';
+                    statusContainer.className = 'connection-status status-disconnected';
+                }
+            }
+
+            async testFirestoreConnection() {
+                try {
+                    await this.db.collection('games').limit(1).get();
+                    return true;
+                } catch (error) {
+                    throw new Error(`Firestore error: ${error.message}`);
+                }
+            }
+
+            showFirebaseError(error) {
+                const loginContainer = document.getElementById('loginSection');
+                const errorHtml = `
+                    <div class="firebase-error">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Firebase Connection Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check your Firebase configuration and security rules.</p>
+                    </div>
+                `;
+                
+                const existingError = loginContainer.querySelector('.firebase-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                loginContainer.insertAdjacentHTML('afterbegin', errorHtml);
+            }
+
+            setupEventListeners() {
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                document.getElementById('gameForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSaveGame();
+                });
+
+                document.getElementById('addGameBtn').addEventListener('click', () => {
+                    this.showAddGameForm();
+                });
+
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    this.resetForm();
+                });
+
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.switchTab(tab.dataset.tab);
+                    });
+                });
+
+                document.getElementById('gamesTableBody').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('edit-btn') || e.target.parentElement.classList.contains('edit-btn')) {
+                        const btn = e.target.classList.contains('edit-btn') ? e.target : e.target.parentElement;
+                        this.handleEditGame(btn.dataset.id);
+                    }
+                    if (e.target.classList.contains('delete-btn') || e.target.parentElement.classList.contains('delete-btn')) {
+                        const btn = e.target.classList.contains('delete-btn') ? e.target : e.target.parentElement;
+                        this.handleDeleteGame(btn.dataset.id);
+                    }
+                });
+
+                this.setupFileUploadListeners();
+                this.setupOfferEventListeners();
+            }
+
+            setupFileUploadListeners() {
+                const fileInput = document.getElementById('offerImageUpload');
+                const uploadContainer = document.getElementById('fileUploadContainer');
+                const preview = document.getElementById('uploadPreview');
+                const previewImage = document.getElementById('previewImage');
+                const removeBtn = document.getElementById('removeImageBtn');
+                const progress = document.getElementById('uploadProgress');
+                const progressFill = document.getElementById('progressFill');
+                const uploadStatus = document.getElementById('uploadStatus');
+                const imagePathDisplay = document.getElementById('imagePathDisplay');
+                const pathText = document.getElementById('pathText');
+
+                // Click to upload
+                uploadContainer.addEventListener('click', (e) => {
+                    if (e.target !== removeBtn && !e.target.closest('#removeImageBtn')) {
+                        fileInput.click();
+                    }
+                });
+
+                // Drag and drop
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, () => {
+                        uploadContainer.classList.add('dragover');
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, () => {
+                        uploadContainer.classList.remove('dragover');
+                    }, false);
+                });
+
+                uploadContainer.addEventListener('drop', (e) => {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        this.handleFileSelect(files[0]);
+                    }
+                });
+
+                // File input change
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileSelect(e.target.files[0]);
+                    }
+                });
+
+                // Remove image
+                removeBtn.addEventListener('click', () => {
+                    this.resetFileUpload();
+                });
+            }
+
+            handleFileSelect(file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPEG, PNG, or WEBP)');
+                    return;
+                }
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('uploadPreview');
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                // Process file and generate path
+                this.processFile(file);
+            }
+
+            async processFile(file) {
+                const progress = document.getElementById('uploadProgress');
+                const progressFill = document.getElementById('progressFill');
+                const uploadStatus = document.getElementById('uploadStatus');
+                const imagePathDisplay = document.getElementById('imagePathDisplay');
+                const pathText = document.getElementById('pathText');
+
+                try {
+                    // Show progress
+                    progress.style.display = 'block';
+                    uploadStatus.textContent = 'Processing image...';
+
+                    // Simulate processing progress
+                    let progressValue = 0;
+                    const progressInterval = setInterval(() => {
+                        progressValue += 10;
+                        progressFill.style.width = progressValue + '%';
+                        
+                        if (progressValue >= 90) {
+                            clearInterval(progressInterval);
+                        }
+                    }, 100);
+
+                    // Generate unique filename and path
+                    const timestamp = Date.now();
+                    const fileExtension = file.name.split('.').pop();
+                    const fileName = `offer_${timestamp}.${fileExtension}`;
+                    const imagePath = `./images/hero/${fileName}`;
+
+                    // Complete progress
+                    setTimeout(() => {
+                        progressFill.style.width = '100%';
+                        uploadStatus.textContent = 'Ready to save!';
+                        progressFill.style.background = 'var(--success)';
+                        
+                        // Display the image path
+                        pathText.textContent = imagePath;
+                        imagePathDisplay.style.display = 'block';
+                        
+                        // Store the path in hidden field
+                        document.getElementById('offerImagePath').value = imagePath;
+                        
+                        setTimeout(() => {
+                            progress.style.display = 'none';
+                        }, 2000);
+                    }, 1000);
+
+                } catch (error) {
+                    console.error('File processing error:', error);
+                    uploadStatus.textContent = 'Processing failed: ' + error.message;
+                    progressFill.style.background = 'var(--danger)';
+                }
+            }
+
+            resetFileUpload() {
+                document.getElementById('offerImageUpload').value = '';
+                document.getElementById('offerImagePath').value = '';
+                document.getElementById('uploadPreview').style.display = 'none';
+                document.getElementById('uploadProgress').style.display = 'none';
+                document.getElementById('imagePathDisplay').style.display = 'none';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressFill').style.background = 'var(--primary)';
+            }
+
+            setupOfferEventListeners() {
+                document.getElementById('addOfferBtn').addEventListener('click', () => {
+                    this.showOfferForm();
+                });
+
+                document.getElementById('offerType').addEventListener('change', (e) => {
+                    const bulkFields = document.getElementById('bulkDiscountFields');
+                    if (e.target.value === 'bulk_discount') {
+                        bulkFields.style.display = 'flex';
+                    } else {
+                        bulkFields.style.display = 'none';
+                    }
+                });
+
+                document.getElementById('offerFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSaveOffer();
+                });
+
+                document.getElementById('cancelOfferBtn').addEventListener('click', () => {
+                    document.getElementById('offerForm').style.display = 'none';
+                    this.resetFileUpload();
+                });
+            }
+
+            async handleLogin() {
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+                const errorMessage = document.getElementById('errorMessage');
+
+                try {
+                    await this.auth.signInWithEmailAndPassword(email, password);
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorMessage.textContent = this.getAuthErrorMessage(error.code);
+                    errorMessage.style.display = 'block';
+                    document.getElementById('adminPassword').value = '';
+                    
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 5000);
+                }
+            }
+
+            getAuthErrorMessage(errorCode) {
+                const errorMessages = {
+                    'auth/invalid-email': 'Invalid email address format.',
+                    'auth/user-disabled': 'This account has been disabled.',
+                    'auth/user-not-found': 'No account found with this email.',
+                    'auth/wrong-password': 'Incorrect password.',
+                    'auth/too-many-requests': 'Too many failed attempts. Please try again later.'
+                };
+                return errorMessages[errorCode] || 'Login failed. Please try again.';
+            }
+
+            async handleLogout() {
+                try {
+                    await this.auth.signOut();
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+
+            showAdminPanel() {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                this.loadAndRenderGames();
+            }
+
+            showLoginForm() {
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+            }
+
+            async loadAndRenderGames() {
+                try {
+                    const games = await this.loadGamesFromFirebase();
+                    this.renderGamesTable(games);
+                } catch (error) {
+                    console.error('Error loading games:', error);
+                    this.renderGamesTable([]);
+                }
+            }
+
+            async loadGamesFromFirebase() {
+                try {
+                    const snapshot = await this.db.collection('games').get();
+                    const games = [];
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const game = {
+                            ...data,
+                            id: parseInt(data.id) || parseInt(doc.id) || data.id || doc.id
+                        };
+                        games.push(game);
+                    });
+                    
+                    games.sort((a, b) => a.id - b.id);
+                    return games;
+                } catch (error) {
+                    console.error('❌ Error loading from Firebase:', error);
+                    return [];
+                }
+            }
+
+            async addGame(gameData) {
+                const games = await this.loadGamesFromFirebase();
+                const newId = games.length > 0 ? Math.max(...games.map(g => g.id)) + 1 : 1;
+                
+                const game = { 
+                    id: newId, 
+                    ...gameData,
+                    features: gameData.features ? gameData.features.split(',').map(f => f.trim()).filter(f => f) : [],
+                    createdAt: new Date().toISOString(),
+                    adminKey: ADMIN_API_KEY
+                };
+                
+                await this.db.collection('games').doc(newId.toString()).set(game);
+                return game;
+            }
+
+            async updateGame(id, gameData) {
+                const updatedGame = { 
+                    ...gameData,
+                    features: gameData.features ? gameData.features.split(',').map(f => f.trim()).filter(f => f) : [],
+                    updatedAt: new Date().toISOString(),
+                    adminKey: ADMIN_API_KEY
+                };
+                
+                await this.db.collection('games').doc(id.toString()).set(updatedGame);
+                return updatedGame;
+            }
+
+            async deleteGame(id) {
+                await this.db.collection('games').doc(id.toString()).delete();
+            }
+
+            getImagePath(game) {
+                if (!game || !game.image) {
+                    return `https://via.placeholder.com/60x40/8B5FBF/ffffff?text=No+Img`;
+                }
+                return game.image;
+            }
+
+            renderGamesTable(games) {
+                const tbody = document.getElementById('gamesTableBody');
+                
+                if (!games || games.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="fas fa-gamepad"></i>
+                                    <h3>No Games Yet</h3>
+                                    <p>Add your first game using the "Add New Game" button!</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = games.map(game => `
+                    <tr>
+                        <td>
+                            <div class="game-thumb" style="background-image: url('${this.getImagePath(game)}')"></div>
+                        </td>
+                        <td><strong>${game.title}</strong></td>
+                        <td>${game.category}</td>
+                        <td>₹${game.price.toLocaleString('en-IN')}</td>
+                        <td>${game.discount > 0 ? `${game.discount}%` : 'No discount'}</td>
+                        <td class="action-buttons">
+                            <button class="action-btn edit-btn" data-id="${game.id}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" data-id="${game.id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async handleSaveGame() {
+                const gameData = {
+                    title: document.getElementById('gameTitle').value,
+                    description: document.getElementById('gameDescription').value,
+                    fullDescription: document.getElementById('gameFullDescription').value,
+                    category: document.getElementById('gameCategory').value,
+                    price: parseInt(document.getElementById('gamePrice').value),
+                    discount: parseInt(document.getElementById('gameDiscount').value) || 0,
+                    image: document.getElementById('gameImage').value,
+                    features: document.getElementById('gameFeatures').value
+                };
+
+                if (!gameData.title || !gameData.description || !gameData.fullDescription || !gameData.category || !gameData.price) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                const editingId = document.getElementById('gameId').value;
+                
+                try {
+                    if (editingId) {
+                        await this.updateGame(parseInt(editingId), gameData);
+                        this.showSuccessMessage('Game updated successfully!');
+                    } else {
+                        await this.addGame(gameData);
+                        this.showSuccessMessage('Game added successfully!');
+                    }
+
+                    await this.loadAndRenderGames();
+                    this.resetForm();
+                    this.switchTab('games-list');
+                    
+                } catch (error) {
+                    console.error('Error saving game:', error);
+                    alert('Error saving game: ' + error.message);
+                }
+            }
+
+            showSuccessMessage(message) {
+                const successMsg = document.getElementById('successMessage');
+                const successText = document.getElementById('successText');
+                successText.textContent = message;
+                successMsg.style.display = 'flex';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 5000);
+            }
+
+            async handleEditGame(id) {
+                try {
+                    const games = await this.loadGamesFromFirebase();
+                    const game = games.find(g => g.id === parseInt(id));
+                    
+                    if (game) {
+                        document.getElementById('gameId').value = game.id;
+                        document.getElementById('gameTitle').value = game.title || '';
+                        document.getElementById('gameDescription').value = game.description || '';
+                        document.getElementById('gameFullDescription').value = game.fullDescription || '';
+                        document.getElementById('gameCategory').value = game.category || '';
+                        document.getElementById('gamePrice').value = game.price || '';
+                        document.getElementById('gameDiscount').value = game.discount || 0;
+                        document.getElementById('gameImage').value = game.image || '';
+                        document.getElementById('gameFeatures').value = game.features ? 
+                            (Array.isArray(game.features) ? game.features.join(', ') : game.features) : '';
+
+                        document.getElementById('form-title').textContent = 'Edit Game';
+                        document.getElementById('saveGameBtn').innerHTML = '<i class="fas fa-save"></i> Update Game';
+                        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+                        this.switchTab('add-game');
+                    }
+                } catch (error) {
+                    console.error('Error loading game:', error);
+                    alert('Error loading game: ' + error.message);
+                }
+            }
+
+            async handleDeleteGame(id) {
+                if (confirm('Are you sure you want to delete this game? This will remove it from the live website immediately.')) {
+                    try {
+                        await this.deleteGame(parseInt(id));
+                        this.showSuccessMessage('Game deleted successfully!');
+                        await this.loadAndRenderGames();
+                    } catch (error) {
+                        alert('Error deleting game: ' + error.message);
+                    }
+                }
+            }
+
+            switchTab(tabName) {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+                
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+
+                if (tabName === 'offers') {
+                    this.renderOffersList();
+                }
+            }
+
+            showAddGameForm() {
+                this.resetForm();
+                this.switchTab('add-game');
+            }
+
+            resetForm() {
+                document.getElementById('gameForm').reset();
+                document.getElementById('gameId').value = '';
+                document.getElementById('form-title').textContent = 'Add New Game';
+                document.getElementById('saveGameBtn').innerHTML = '<i class="fas fa-save"></i> Save Game';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+            }
+
+            // Offer Management Methods
+            async loadOffersFromFirebase() {
+                try {
+                    const snapshot = await this.db.collection('offers').get();
+                    const offers = [];
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        offers.push({
+                            ...data,
+                            id: doc.id
+                        });
+                    });
+                    
+                    return offers;
+                } catch (error) {
+                    console.error('Error loading offers:', error);
+                    return [];
+                }
+            }
+
+            async renderOffersList() {
+                const offers = await this.loadOffersFromFirebase();
+                const container = document.getElementById('offersList');
+                
+                if (offers.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-tags"></i>
+                            <h3>No Offers Yet</h3>
+                            <p>Create your first special offer using the "Add New Offer" button!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = offers.map(offer => `
+                    <div class="offer-item">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: var(--dark); display: flex; align-items: center;">
+                                    ${offer.title}
+                                    <span class="offer-badge">${this.getOfferTypeLabel(offer.type)}</span>
+                                </h4>
+                                <p style="margin: 8px 0; color: #666; line-height: 1.5;">${offer.description}</p>
+                                ${offer.image ? `
+                                    <div style="margin: 10px 0;">
+                                        <div class="offer-image-preview" style="background-image: url('${offer.image}'); width: 120px; height: 80px;"></div>
+                                        <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                                            <strong>Path:</strong> ${offer.image}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #666; flex-wrap: wrap;">
+                                    ${offer.minQuantity ? `<span><strong>Min Quantity:</strong> ${offer.minQuantity}</span>` : ''}
+                                    ${offer.discountPercent ? `<span><strong>Discount:</strong> ${offer.discountPercent}%</span>` : ''}
+                                    ${offer.validUntil ? `<span><strong>Valid Until:</strong> ${new Date(offer.validUntil).toLocaleDateString()}</span>` : ''}
+                                    <span><strong>Created:</strong> ${new Date(offer.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                ${offer.applicableGames && offer.applicableGames.length > 0 ? `
+                                    <div style="margin-top: 8px;">
+                                        <small style="color: #888;"><strong>Applicable to:</strong> ${offer.applicableGames.length} game(s)</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn edit-btn" onclick="window.adminPanel.editOffer('${offer.id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="window.adminPanel.deleteOffer('${offer.id}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getOfferTypeLabel(type) {
+                const types = {
+                    'buy1get1': 'Buy 1 Get 1 Free',
+                    'bulk_discount': 'Bulk Discount',
+                    'combo': 'Combo Offer'
+                };
+                return types[type] || type;
+            }
+
+            async showOfferForm() {
+                document.getElementById('offerForm').style.display = 'block';
+                document.getElementById('offer-form-title').textContent = 'Add New Offer';
+                document.getElementById('saveOfferBtn').innerHTML = '<i class="fas fa-save"></i> Save Offer';
+                document.getElementById('offerId').value = '';
+                document.getElementById('offerFormElement').reset();
+                this.resetFileUpload();
+                
+                await this.populateGamesDropdown();
+            }
+
+            async populateGamesDropdown() {
+                const games = await this.loadGamesFromFirebase();
+                const dropdown = document.getElementById('applicableGames');
+                
+                dropdown.innerHTML = games.map(game => `
+                    <option value="${game.id}">${game.title} - ₹${game.price}</option>
+                `).join('');
+            }
+
+            async handleSaveOffer() {
+                const imagePath = document.getElementById('offerImagePath').value;
+                
+                const offerData = {
+                    title: document.getElementById('offerTitle').value,
+                    type: document.getElementById('offerType').value,
+                    description: document.getElementById('offerDescription').value,
+                    image: imagePath || null,
+                    validUntil: document.getElementById('offerValidUntil').value || null,
+                    applicableGames: Array.from(document.getElementById('applicableGames').selectedOptions).map(opt => opt.value),
+                    createdAt: new Date().toISOString(),
+                    adminKey: ADMIN_API_KEY
+                };
+
+                // Validate bulk discount fields
+                if (offerData.type === 'bulk_discount') {
+                    const minQuantity = document.getElementById('minQuantity').value;
+                    const discountPercent = document.getElementById('discountPercent').value;
+                    
+                    if (!minQuantity || !discountPercent) {
+                        alert('Please fill all required fields for bulk discount');
+                        return;
+                    }
+                    
+                    offerData.minQuantity = parseInt(minQuantity);
+                    offerData.discountPercent = parseInt(discountPercent);
+                }
+
+                const offerId = document.getElementById('offerId').value;
+                
+                try {
+                    if (offerId) {
+                        await this.db.collection('offers').doc(offerId).set(offerData);
+                        this.showSuccessMessage('Offer updated successfully!');
+                    } else {
+                        await this.db.collection('offers').add(offerData);
+                        this.showSuccessMessage('Offer created successfully!');
+                    }
+
+                    await this.renderOffersList();
+                    document.getElementById('offerForm').style.display = 'none';
+                    this.resetFileUpload();
+                    
+                } catch (error) {
+                    console.error('Error saving offer:', error);
+                    alert('Error saving offer: ' + error.message);
+                }
+            }
+
+            async editOffer(offerId) {
+                try {
+                    const doc = await this.db.collection('offers').doc(offerId).get();
+                    if (doc.exists) {
+                        const offer = doc.data();
+                        
+                        document.getElementById('offerId').value = offerId;
+                        document.getElementById('offerTitle').value = offer.title || '';
+                        document.getElementById('offerType').value = offer.type || '';
+                        document.getElementById('offerDescription').value = offer.description || '';
+                        document.getElementById('offerValidUntil').value = offer.validUntil || '';
+                        
+                        // Set image path if exists
+                        if (offer.image) {
+                            document.getElementById('offerImagePath').value = offer.image;
+                            const pathText = document.getElementById('pathText');
+                            pathText.textContent = offer.image;
+                            document.getElementById('imagePathDisplay').style.display = 'block';
+                        }
+                        
+                        if (offer.type === 'bulk_discount') {
+                            document.getElementById('minQuantity').value = offer.minQuantity || '';
+                            document.getElementById('discountPercent').value = offer.discountPercent || '';
+                        }
+                        
+                        await this.populateGamesDropdown();
+                        const applicableGamesSelect = document.getElementById('applicableGames');
+                        Array.from(applicableGamesSelect.options).forEach(option => {
+                            option.selected = offer.applicableGames?.includes(option.value) || false;
+                        });
+                        
+                        document.getElementById('offer-form-title').textContent = 'Edit Offer';
+                        document.getElementById('saveOfferBtn').innerHTML = '<i class="fas fa-save"></i> Update Offer';
+                        document.getElementById('offerForm').style.display = 'block';
+                        
+                        const bulkFields = document.getElementById('bulkDiscountFields');
+                        bulkFields.style.display = offer.type === 'bulk_discount' ? 'flex' : 'none';
+                    }
+                } catch (error) {
+                    console.error('Error loading offer:', error);
+                    alert('Error loading offer: ' + error.message);
+                }
+            }
+
+            async deleteOffer(offerId) {
+                if (confirm('Are you sure you want to delete this offer?')) {
+                    try {
+                        await this.db.collection('offers').doc(offerId).delete();
+                        this.showSuccessMessage('Offer deleted successfully!');
+                        await this.renderOffersList();
+                    } catch (error) {
+                        alert('Error deleting offer: ' + error.message);
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.adminPanel = new AdminPanel();
+        });
+    </script>
+</body>
+</html>
