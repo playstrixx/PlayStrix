@@ -3533,6 +3533,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             window.gameStore = new GameStore();
         });
+        /* Smooth Image Zoom Effect */
+.game-image {
+    transition: transform 0.5s ease, filter 0.3s ease;
+    overflow: hidden;
+    transform-origin: center center;
+}
+
+.game-card:hover .game-image {
+    transform: scale(1.08);
+    filter: brightness(1.05);
+}
     </script>
 </body>
 </html>
